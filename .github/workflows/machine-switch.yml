@@ -10,32 +10,42 @@ env:
 
 jobs:
 
+  validate_switch:
+    name: Validate MACHINE_SWITCH
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check variable value
+        run: |
+          echo "MACHINE_SWITCH=${MACHINE_SWITCH}"
+          if [[ "${MACHINE_SWITCH}" != "TRUE" && "${MACHINE_SWITCH}" != "FALSE" ]]; then
+            echo "❌ MACHINE_SWITCH must be TRUE or FALSE"
+            exit 1
+          fi
+          echo "✅ MACHINE_SWITCH is valid"
+
   self_hosted_job:
     name: Run on Self-Hosted Runner
+    needs: validate_switch
     if: env.MACHINE_SWITCH == 'TRUE'
     runs-on: self-hosted
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Verify runner
-        run: |
+      - uses: actions/checkout@v4
+      - run: |
           echo "Running on SELF-HOSTED runner"
           hostname
           whoami
 
   shared_runner_job:
     name: Run on GitHub Hosted Runner
+    needs: validate_switch
     if: env.MACHINE_SWITCH == 'FALSE'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Verify runner
-        run: |
+      - uses: actions/checkout@v4
+      - run: |
           echo "Running on GITHUB-HOSTED runner"
           hostname
           whoami
+
