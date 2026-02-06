@@ -1,0 +1,41 @@
+name: CI with Machine Switch
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  MACHINE_SWITCH: ${{ vars.MACHINE_SWITCH }}
+
+jobs:
+
+  self_hosted_job:
+    name: Run on Self-Hosted Runner
+    if: env.MACHINE_SWITCH == 'TRUE'
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify runner
+        run: |
+          echo "Running on SELF-HOSTED runner"
+          hostname
+          whoami
+
+  shared_runner_job:
+    name: Run on GitHub Hosted Runner
+    if: env.MACHINE_SWITCH == 'FALSE'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify runner
+        run: |
+          echo "Running on GITHUB-HOSTED runner"
+          hostname
+          whoami
