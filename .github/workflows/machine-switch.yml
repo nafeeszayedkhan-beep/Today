@@ -5,9 +5,6 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-env:
-  MACHINE_SWITCH: ${{ vars.MACHINE_SWITCH }}
-
 jobs:
 
   validate_switch:
@@ -16,8 +13,8 @@ jobs:
     steps:
       - name: Check variable value
         run: |
-          echo "MACHINE_SWITCH=${MACHINE_SWITCH}"
-          if [[ "${MACHINE_SWITCH}" != "TRUE" && "${MACHINE_SWITCH}" != "FALSE" ]]; then
+          echo "MACHINE_SWITCH=${{ vars.MACHINE_SWITCH }}"
+          if [[ "${{ vars.MACHINE_SWITCH }}" != "TRUE" && "${{ vars.MACHINE_SWITCH }}" != "FALSE" ]]; then
             echo "❌ MACHINE_SWITCH must be TRUE or FALSE"
             exit 1
           fi
@@ -26,12 +23,13 @@ jobs:
   self_hosted_job:
     name: Run on Self-Hosted Runner
     needs: validate_switch
-    if: env.MACHINE_SWITCH == 'TRUE'
+    if: vars.MACHINE_SWITCH == 'TRUE'
     runs-on: self-hosted
 
     steps:
       - uses: actions/checkout@v4
-      - run: |
+      - name: Verify runner
+        run: |
           echo "Running on SELF-HOSTED runner"
           hostname
           whoami
@@ -39,13 +37,13 @@ jobs:
   shared_runner_job:
     name: Run on GitHub Hosted Runner
     needs: validate_switch
-    if: env.MACHINE_SWITCH == 'FALSE'
+    if: vars.MACHINE_SWITCH == 'FALSE'
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - run: |
+      - name: Verify runner
+        run: |
           echo "Running on GITHUB-HOSTED runner"
           hostname
           whoami
-
